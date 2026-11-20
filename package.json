@@ -1,0 +1,23 @@
+{
+  "name": "rawdrop",
+  "version": "1.0.0",
+  "description": "RAW File Hosting Platform - Upload files, get direct RAW URLs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": ["raw", "file-hosting", "cdn", "upload"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.0",
+    "helmet": "^8.0.0",
+    "mime-types": "^2.1.35",
+    "multer": "^1.4.5-lts.1",
+    "nanoid": "^3.3.7"
+  }
+}
