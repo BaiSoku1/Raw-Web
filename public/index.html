@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAWDROP — RAW File Hosting</title>
+  <meta name="description" content="Upload files, get a direct RAW URL instantly." />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="#home" class="logo">
+        <span class="logo-mark" aria-hidden="true"></span>
+        <span>RAWDROP</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#home" data-nav="home">Home</a>
+        <a href="#upload" data-nav="upload">Upload</a>
+        <a href="#api" data-nav="api">API</a>
+        <a href="#docs" data-nav="docs">Docs</a>
+        <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </nav>
+      <button class="nav-toggle" aria-label="Toggle menu" id="navToggle">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- HOME -->
+    <section id="home" class="view active">
+      <div class="hero">
+        <p class="eyebrow">RAW FILE HOSTING</p>
+        <h1>Drop a file.<br/>Get a RAW URL.</h1>
+        <p class="hero-sub">
+          Upload any allowed file type and receive a direct, cacheable RAW endpoint.
+          No preview pages, no wrappers. Just your file.
+        </p>
+        <div class="hero-actions">
+          <a href="#upload" class="btn btn-primary">Upload a file</a>
+          <a href="#docs" class="btn btn-ghost">Read the docs</a>
+        </div>
+        <div class="hero-url">
+          <code id="sampleUrl">https://example.com/raw/a8K2mP9</code>
+          <button class="icon-btn" data-copy="#sampleUrl" title="Copy">Copy</button>
+        </div>
+      </div>
+
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+          <p class="stat-label">Total files</p>
+          <p class="stat-value" id="statFiles">—</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Storage used</p>
+          <p class="stat-value" id="statStorage">—</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">API status</p>
+          <p class="stat-value stat-status" id="statApi">—</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Uptime</p>
+          <p class="stat-value" id="statUptime">—</p>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h2>Recent uploads</h2>
+        <a href="#upload" class="link">Upload →</a>
+      </div>
+      <div class="recent" id="recentList">
+        <p class="empty">Loading recent uploads…</p>
+      </div>
+    </section>
+
+    <!-- UPLOAD -->
+    <section id="upload" class="view">
+      <div class="section-head">
+        <h1>Upload</h1>
+      </div>
+
+      <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload file">
+        <input type="file" id="fileInput" hidden />
+        <div class="dropzone-inner">
+          <p class="dz-title">Drop a file here</p>
+          <p class="dz-sub">or <span class="link">browse</span></p>
+          <p class="dz-meta" id="dzMeta">Max size —</p>
+        </div>
+      </div>
+
+      <div class="upload-panel" id="uploadPanel" hidden>
+        <div class="file-meta">
+          <span class="file-name" id="uFileName">—</span>
+          <span class="file-size" id="uFileSize">—</span>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" id="uProgressBar"></div>
+        </div>
+        <p class="progress-text" id="uProgressText">Waiting…</p>
+      </div>
+
+      <div class="result" id="resultCard" hidden>
+        <p class="result-label">RAW URL</p>
+        <div class="result-row">
+          <code id="resultUrl"></code>
+          <button class="btn btn-primary btn-sm" id="copyResult">Copy</button>
+          <button class="btn btn-ghost btn-sm" id="openResult" target="_blank">Open</button>
+        </div>
+        <div class="result-meta" id="resultMeta"></div>
+      </div>
+
+      <div class="section-head section-head-inline">
+        <h2>Upload history</h2>
+        <button class="btn btn-ghost btn-sm" id="refreshHistory">Refresh</button>
+      </div>
+      <div class="history" id="historyList">
+        <p class="empty">No uploads yet.</p>
+      </div>
+    </section>
+
+    <!-- API -->
+    <section id="api" class="view">
+      <div class="section-head"><h1>API</h1></div>
+      <p class="lead">
+        RAWDROP exposes a small REST API for uploading, listing, and deleting files.
+        Base URL is your own deployment origin.
+      </p>
+
+      <div class="endpoint-list">
+        <article class="endpoint">
+          <div class="endpoint-head">
+            <span class="method post">POST</span>
+            <code>/api/upload</code>
+          </div>
+          <p>Upload a file via <code>multipart/form-data</code> with the field <code>file</code>.</p>
+          <pre><code>{
+  "success": true,
+  "id": "a8K2mP9",
+  "url": "https://example.com/raw/a8K2mP9",
+  "filename": "script.lua",
+  "size": 1024,
+  "contentType": "text/plain",
+  "extension": "lua"
+}</code></pre>
+        </article>
+
+        <article class="endpoint">
+          <div class="endpoint-head">
+            <span class="method get">GET</span>
+            <code>/raw/:id</code>
+          </div>
+          <p>Returns the raw file with the stored <code>Content-Type</code>. No wrapper, no HTML.</p>
+        </article>
+
+        <article class="endpoint">
+          <div class="endpoint-head">
+            <span class="method get">GET</span>
+            <code>/api/files</code>
+          </div>
+          <p>List uploaded files. Query params: <code>limit</code>, <code>offset</code>.</p>
+        </article>
+
+        <article class="endpoint">
+          <div class="endpoint-head">
+            <span class="method get">GET</span>
+            <code>/api/files/:id</code>
+          </div>
+          <p>Get metadata for a single file.</p>
+        </article>
+
+        <article class="endpoint">
+          <div class="endpoint-head">
+            <span class="method delete">DELETE</span>
+            <code>/api/files/:id</code>
+          </div>
+          <p>Delete a file. If <code>UPLOAD_TOKEN</code> is set on the server, send header <code>x-delete-token</code>.</p>
+        </article>
+
+        <article class="endpoint">
+          <div class="endpoint-head">
+            <span class="method get">GET</span>
+            <code>/api/stats</code>
+          </div>
+          <p>Server stats: file count, storage usage, uptime, status.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- DOCS -->
+    <section id="docs" class="view">
+      <div class="section-head"><h1>Documentation</h1></div>
+
+      <h2>HTML upload</h2>
+      <pre><code>&lt;input type="file" id="file" /&gt;
+&lt;button onclick="uploadFile()"&gt;Upload&lt;/button&gt;
+
+&lt;script&gt;
+async function uploadFile() {
+  const file = document.getElementById("file").files[0];
+  if (!file) return;
+
+  const data = new FormData();
+  data.append("file", file);
+
+  const response = await fetch("https://example.com/api/upload", {
+    method: "POST",
+    body: data
+  });
+
+  const result = await response.json();
+  if (result.success) console.log("RAW URL:", result.url);
+}
+&lt;/script&gt;</code></pre>
+
+      <h2>JavaScript (Fetch)</h2>
+      <pre><code>const formData = new FormData();
+formData.append("file", fileInput.files[0]);
+
+const response = await fetch("https://example.com/api/upload", {
+  method: "POST",
+  body: formData
+});
+
+const result = await response.json();
+console.log(result.url);</code></pre>
+
+      <h2>cURL</h2>
+      <pre><code>curl -F "file=@./script.lua" https://example.com/api/upload</code></pre>
+
+      <h2>Node.js (Fetch, Node 18+)</h2>
+      <pre><code>import fs from "node:fs";
+
+const file = new Blob([fs.readFileSync("./script.lua")]);
+const form = new FormData();
+form.append("file", file, "script.lua");
+
+const res = await fetch("https://example.com/api/upload", {
+  method: "POST",
+  body: form
+});
+
+const data = await res.json();
+console.log(data.url);</code></pre>
+
+      <h2>Python (Requests)</h2>
+      <pre><code>import requests
+
+with open("script.lua", "rb") as f:
+    r = requests.post(
+        "https://example.com/api/upload",
+        files={"file": ("script.lua", f, "text/plain")}
+    )
+
+print(r.json()["url"])</code></pre>
+
+      <h2>Limits &amp; errors</h2>
+      <ul class="doc-list">
+        <li>Max upload size: <code>100 MB</code> (configurable via <code>MAX_FILE_SIZE</code>).</li>
+        <li>Upload rate limit: <code>10 / minute / IP</code>.</li>
+        <li>Blocked: executables, shell scripts, server-side languages (<code>.php</code>, <code>.exe</code>, <code>.sh</code>, …).</li>
+        <li>Allowed: text, code (<code>.lua</code>, <code>.css</code>, <code>.json</code>, <code>.xml</code>, …), images, audio, video, archives, fonts.</li>
+      </ul>
+
+      <table class="err-table">
+        <thead><tr><th>Status</th><th>Error</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>400</td><td>NO_FILE</td><td>No file in request.</td></tr>
+          <tr><td>403</td><td>FORBIDDEN</td><td>Invalid delete token.</td></tr>
+          <tr><td>404</td><td>NOT_FOUND</td><td>ID does not exist.</td></tr>
+          <tr><td>413</td><td>FILE_TOO_LARGE</td><td>Exceeds size limit.</td></tr>
+          <tr><td>415</td><td>UNSUPPORTED_EXT / BLOCKED_EXT / BLOCKED_MIME</td><td>File type rejected.</td></tr>
+          <tr><td>429</td><td>RATE_LIMITED / UPLOAD_RATE_LIMITED</td><td>Too many requests.</td></tr>
+          <tr><td>500</td><td>INTERNAL_ERROR</td><td>Unexpected server error.</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <footer class="footer">
+    <span>RAWDROP — RAW file hosting</span>
+    <span>Built with Node, Express, SQLite</span>
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/upload.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
